@@ -1,0 +1,24 @@
+﻿@page "/"
+@using LintingResults.Data
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<LintingDbContext> ContextFactory
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+@foreach(var repo in repos)
+{
+    <a href="/ScanDetails/@repo.User/@repo.RepoName"> @repo.User/@repo.RepoName</a>
+}
+
+@code {
+    IEnumerable<Repo> repos;
+    protected override async Task OnInitializedAsync()
+    {
+
+        await using var context = await ContextFactory.CreateDbContextAsync();
+        repos = await context.Repos.ToListAsync();
+        await base.OnInitializedAsync();
+    }
+}

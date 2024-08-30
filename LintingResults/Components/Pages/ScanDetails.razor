@@ -1,0 +1,53 @@
+﻿@page "/ScanDetails/{User}/{Repo}"
+@using System.Globalization
+@using LintingResults.Data
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<LintingDbContext> ContextFactory
+<h3>ScanDetails</h3>
+
+@if (lintingResults != null)
+{
+    <FluentTreeView>
+
+        @foreach(var lintingResult in lintingResults)
+        {
+            <FluentTreeItem Text="@lintingResult.dateInserted.ToString(CultureInfo.InvariantCulture)" Icon="Calendar">
+                @foreach(var (book, chapters) in lintingResult.LintingItems)
+                {
+                    <FluentTreeItem Text="@book" Icon="Book">
+                        @foreach(var (chapter, verses) in chapters)
+                        {
+                            <FluentTreeItem Text="@chapter" Icon="Document">
+                                @foreach(var verse in verses)
+                                {
+                                    <FluentTreeItem Text="@verse.verse" Icon="Document">
+                                        <FluentTreeItem Text="@verse.message" Icon="Document"></FluentTreeItem>
+                                    </FluentTreeItem>
+                                }
+                            </FluentTreeItem>
+                        }
+                    </FluentTreeItem>
+                }
+                <p>@lintingResult.dateInserted</p>
+            </FluentTreeItem>
+        }
+    </FluentTreeView>
+}
+
+@code {
+   [Parameter] 
+    public string User { get; set; }
+    
+    [Parameter]
+    public string Repo { get; set; }
+    
+    IEnumerable<LintingResultDBModel> lintingResults = [];
+
+    protected override void OnInitialized()
+    {
+        using var context = ContextFactory.CreateDbContext();
+        var repo = context.Repos.Include(r => r.LintingResults).FirstOrDefault(r => r.RepoName == Repo && r.User == User);
+        lintingResults = repo?.LintingResults;
+    }
+
+}
