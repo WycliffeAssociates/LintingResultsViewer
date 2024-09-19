@@ -1,53 +1,78 @@
-﻿@page "/ScanDetails/{User}/{Repo}"
+﻿@page "/ScanDetails/{ScanId:int}"
 @using System.Globalization
 @using LintingResults.Data
 @using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<LintingDbContext> ContextFactory
-<h3>ScanDetails</h3>
+<h1>ScanDetails</h1>
 
-@if (lintingResults != null)
+    
+@if (result != null)
 {
-    <FluentTreeView>
-
-        @foreach(var lintingResult in lintingResults)
+    <p>Scan on @result.dateInserted</p>
+    <FluentTabs Orientation="Orientation.Vertical">
+        @foreach(var (book, chapters) in result.LintingItems.OrderBy(i => bibleBookAbbreviations.IndexOf(i.Key.ToUpper())))
         {
-            <FluentTreeItem Text="@lintingResult.dateInserted.ToString(CultureInfo.InvariantCulture)" Icon="Calendar">
-                @foreach(var (book, chapters) in lintingResult.LintingItems)
+            <FluentTab Label="@book">
+                @foreach(var (chapter, verses) in chapters)
                 {
-                    <FluentTreeItem Text="@book" Icon="Book">
-                        @foreach(var (chapter, verses) in chapters)
+                    if (chapter == "Unknown")
+                    {
+                        if (book == "Unknown")
                         {
-                            <FluentTreeItem Text="@chapter" Icon="Document">
-                                @foreach(var verse in verses)
-                                {
-                                    <FluentTreeItem Text="@verse.verse" Icon="Document">
-                                        <FluentTreeItem Text="@verse.message" Icon="Document"></FluentTreeItem>
-                                    </FluentTreeItem>
-                                }
-                            </FluentTreeItem>
+                            <h3>Miscellaneous things </h3>
                         }
-                    </FluentTreeItem>
+                        else
+                        {
+                            <h3>Book level or unknown chapter</h3>
+                        }
+                    }
+                    else
+                    {
+                        <h3>@chapter</h3>
+                    }
+                    <ul>
+                        @foreach(var verse in verses)
+                        {
+                            <li>
+                                <div>@verse.verse @verse.message</div>
+                            </li>
+                        }
+                    </ul>
                 }
-                <p>@lintingResult.dateInserted</p>
-            </FluentTreeItem>
+        </FluentTab>
         }
-    </FluentTreeView>
+    </FluentTabs>
+}
+else
+{
+    <p>Scan not found, you probably have a broken link</p>
 }
 
 @code {
    [Parameter] 
-    public string User { get; set; }
+    public int ScanId { get; set; }
     
-    [Parameter]
-    public string Repo { get; set; }
-    
-    IEnumerable<LintingResultDBModel> lintingResults = [];
+    LintingResultDBModel? result;
 
     protected override void OnInitialized()
     {
         using var context = ContextFactory.CreateDbContext();
-        var repo = context.Repos.Include(r => r.LintingResults).FirstOrDefault(r => r.RepoName == Repo && r.User == User);
-        lintingResults = repo?.LintingResults;
+        result = context.LintingResults.FirstOrDefault(i => i.LintingResultDBModelId == ScanId);
     }
+
+    List<string> bibleBookAbbreviations = new List<string>
+    {
+    // Old Testament
+    "GEN", "EXO", "LEV", "NUM", "DEU", "JOS", "JDG", "RUT", "1SA", "2SA",
+    "1KI", "2KI", "1CH", "2CH", "EZR", "NEH", "EST", "JOB", "PSA", "PRO",
+    "ECC", "SNG", "ISA", "JER", "LAM", "EZK", "DAN", "HOS", "JOL", "AMO",
+    "OBA", "JON", "MIC", "NAM", "HAB", "ZEP", "HAG", "ZEC", "MAL",
+
+    // New Testament
+    "MAT", "MRK", "LUK", "JHN", "ACT", "ROM", "1CO", "2CO", "GAL", "EPH",
+    "PHP", "COL", "1TH", "2TH", "1TI", "2TI", "TIT", "PHM", "HEB",
+    "JAS", "1PE", "2PE", "1JN", "2JN", "3JN", "JUD", "REV"
+    };
+
 
 }

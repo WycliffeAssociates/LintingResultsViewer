@@ -3,16 +3,19 @@ using System;
 using LintingResults.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace LintingResults.Data.Migrations
+namespace LintingResults.Migrations
 {
     [DbContext(typeof(LintingDbContext))]
-    partial class LintingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240917191847_Separate Linting Result")]
+    partial class SeparateLintingResult
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.6");

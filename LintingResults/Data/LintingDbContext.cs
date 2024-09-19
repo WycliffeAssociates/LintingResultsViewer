@@ -26,4 +26,5 @@ public class LintingDbContext: DbContext
 
 
     public DbSet<Repo> Repos { get; set; }
+    public DbSet<LintingResultDBModel> LintingResults { get; set; }
 }

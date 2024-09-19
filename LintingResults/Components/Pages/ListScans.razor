@@ -1,0 +1,33 @@
+@page "/ListScans/{User}/{Repo}"
+@using LintingResults.Data
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<LintingDbContext> ContextFactory
+<h3>List of Scans for @User/@Repo</h3>
+
+@if (lintingResults != null)
+{
+    <ul>
+        @foreach (var result in lintingResults)
+        {
+            <li><a href="/ScanDetails/@result.LintingResultDBModelId">@result.dateInserted</a></li>
+        }
+    </ul>
+}
+
+@code {
+
+    [Parameter]
+    public string User { get; set; }
+
+    [Parameter]
+    public string Repo { get; set; }
+
+    IEnumerable<LintingResultDBModel> lintingResults = [];
+
+    protected override void OnInitialized()
+    {
+        using var context = ContextFactory.CreateDbContext();
+        var repo = context.Repos.Include(r => r.LintingResults).FirstOrDefault(r => r.RepoName == Repo && r.User == User);
+        lintingResults = repo?.LintingResults;
+    }
+}

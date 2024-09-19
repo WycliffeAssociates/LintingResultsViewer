@@ -5,12 +5,14 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Scanned repos</h1>
 
-@foreach(var repo in repos)
-{
-    <a href="/ScanDetails/@repo.User/@repo.RepoName"> @repo.User/@repo.RepoName</a>
-}
+<ul>
+    @foreach(var repo in repos)
+    {
+        <li><a href="/ListScans/@repo.User/@repo.RepoName">@repo.User/@repo.RepoName</a></li>
+    }
+</ul>
 
 @code {
     IEnumerable<Repo> repos;
