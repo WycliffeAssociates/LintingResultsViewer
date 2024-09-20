@@ -1,0 +1,11 @@
+services:
+  web:
+    image: registry.walink.org/wa/linting-results:${IMAGE_TAG}
+    environment:
+      - ServiceBusConnectionString=${ServiceBusConnectionString}
+      - ConnectionStrings__DefaultConnection="DataSource=/app/data/database.db;Cache=Shared"
+    volumes:
+      - data:/app/database.db
+
+volumes:
+  data:

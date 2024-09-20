@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UserSecretsId>aspnet-LintingResults-9E4A19BC-AB46-4016-86EA-A8FCC44B13DE</UserSecretsId>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,5 +18,10 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.*-* "/>
         <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.*-* "/>
+    </ItemGroup>
+    <ItemGroup>
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
     </ItemGroup>
 </Project>

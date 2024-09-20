@@ -67,4 +67,8 @@ app.MapRazorComponents<App>()
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 
+// Apply any pending migrations
+var dbContext = app.Services.GetService<LintingDbContext>();
+dbContext.Database.Migrate();
+
 app.Run();
