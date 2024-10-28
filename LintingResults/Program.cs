@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.FluentUI.AspNetCore.Components;
 using LintingResults.Components;
 using LintingResults.Components.Account;
+using LintingResults.Components.Pages;
 using LintingResults.Data;
 using LintingResults.Services;
 
@@ -68,8 +69,12 @@ app.MapRazorComponents<App>()
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 
-// Apply any pending migrations
-//var dbContext = app.Services.GetService<LintingDbContext>();
-//dbContext.Database.Migrate();
+// Apply any pending migrations on startup
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<ApplicationDbContext>();
+    context.Database.Migrate();
+}
 
 app.Run();

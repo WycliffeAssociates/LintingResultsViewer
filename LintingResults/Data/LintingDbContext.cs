@@ -14,10 +14,9 @@ public class LintingDbContext: DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        var options = new JsonSerializerOptions();
         var converter = new ValueConverter<Dictionary<string, Dictionary<string, List<LintingResultItem>>>, string>(
-            v => JsonSerializer.Serialize(v, options),
-            v => JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, List<LintingResultItem>>>>(v, options));
+            v => JsonSerializer.Serialize(v, JSONContext.Default.DictionaryStringDictionaryStringListLintingResultItem),
+            v => JsonSerializer.Deserialize(v, JSONContext.Default.DictionaryStringDictionaryStringListLintingResultItem));
 
         modelBuilder.Entity<LintingResultDBModel>()
             .Property(e => e.LintingItems)

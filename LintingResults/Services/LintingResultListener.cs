@@ -1,4 +1,5 @@
-﻿using Azure.Messaging.ServiceBus;
+﻿using System.Text.Json;
+using Azure.Messaging.ServiceBus;
 using LintingResults.Data;
 
 namespace LintingResults.Services;
@@ -39,7 +40,7 @@ public class LintingResultListener: IHostedService
     {
         using var scope = _serviceScopeFactory.CreateScope();
         var lintingDbContext = scope.ServiceProvider.GetRequiredService<LintingDbContext>();
-        var lintingResult = arg.Message.Body.ToObjectFromJson<LintingResult>();
+        var lintingResult = JsonSerializer.Deserialize(arg.Message.Body, JSONContext.Default.LintingResult);
         var matchingRepo = lintingDbContext.Repos
             .FirstOrDefault(i => i.RepoId == lintingResult.RepoId);
         _logger.LogDebug($"Received linting result for {lintingResult.User}/{lintingResult.Repo}");
@@ -52,7 +53,7 @@ public class LintingResultListener: IHostedService
         }
         else
         {
-            repoLintingItems = await result.Content.ReadFromJsonAsync<Dictionary<string, Dictionary<string, List<LintingResultItem>>>>();
+            repoLintingItems = await result.Content.ReadFromJsonAsync(JSONContext.Default.DictionaryStringDictionaryStringListLintingResultItem);
         }
         if (matchingRepo == null)
         {
