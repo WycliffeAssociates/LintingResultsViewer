@@ -33,6 +33,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDbContextFactory<LintingDbContext>(options =>
     options.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddDataGridEntityFrameworkAdapter();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -68,7 +69,7 @@ app.MapRazorComponents<App>()
 app.MapAdditionalIdentityEndpoints();
 
 // Apply any pending migrations
-var dbContext = app.Services.GetService<LintingDbContext>();
-dbContext.Database.Migrate();
+//var dbContext = app.Services.GetService<LintingDbContext>();
+//dbContext.Database.Migrate();
 
 app.Run();

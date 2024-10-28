@@ -2,25 +2,62 @@
 @using LintingResults.Data
 @using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<LintingDbContext> ContextFactory
+@inject NavigationManager NavigationManager
+@implements IDisposable
+@rendermode InteractiveServer
 
 <PageTitle>Home</PageTitle>
 
 <h1>Scanned repos</h1>
 
-<ul>
-    @foreach(var repo in repos)
-    {
-        <li><a href="/ListScans/@repo.User/@repo.RepoName">@repo.User/@repo.RepoName</a></li>
-    }
-</ul>
+
+@if (repos == null)
+{
+    <p>Loading</p>
+}
+else
+{
+    <FluentToolbar Style="width: 100%">
+        <FluentSearch @bind-Value="@searchValue" Placeholder="Search..." @bind-Value:after="OnSearch"/>
+    </FluentToolbar>
+    <FluentDataGrid TGridItem="Repo" Items="repos" ShowHover="true" OnRowClick="OnRowClick" Pagination="paginationState" ResizableColumns="true">
+        <PropertyColumn Property="@(i => i.RepoId)" Title="Repo ID" Sortable="true"/>
+        <PropertyColumn Property="@(i => i.User)" Title="User" Sortable="true"/>
+        <PropertyColumn Property="@(i => i.RepoName)" Title="Repo Name" Sortable="true"/>
+    </FluentDataGrid>
+    <FluentPaginator State="paginationState"/>
+}
 
 @code {
-    IEnumerable<Repo> repos;
+    private IQueryable<Repo>? repos;
+    private string searchValue;
+    private PaginationState paginationState = new() { ItemsPerPage = 20 };
+    private LintingDbContext _context;
     protected override async Task OnInitializedAsync()
     {
 
-        await using var context = await ContextFactory.CreateDbContextAsync();
-        repos = await context.Repos.ToListAsync();
+        _context = await ContextFactory.CreateDbContextAsync();
+        repos = _context.Repos;
         await base.OnInitializedAsync();
     }
+
+    private async Task OnSearch()
+    {
+        repos = _context.Repos.Where(r => r.RepoName.Contains(searchValue) || r.User.Contains(searchValue));
+    }
+    
+    public void Dispose()
+    {
+        _context.Dispose();
+    }
+
+    private void OnRowClick(FluentDataGridRow<Repo> obj)
+    {
+        if (obj.Item == null)
+        {
+            return;
+        }
+        NavigationManager.NavigateTo($"/ListScans/{obj.Item.User}/{obj.Item.RepoName}");
+    }
+
 }

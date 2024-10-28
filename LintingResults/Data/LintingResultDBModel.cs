@@ -12,4 +12,5 @@ public class LintingResultItem
 {
     public string verse { get; set; }
     public string message { get; set; }
+    public string errorId { get; set; }
 }
