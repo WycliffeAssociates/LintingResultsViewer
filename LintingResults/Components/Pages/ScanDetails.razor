@@ -2,46 +2,63 @@
 @using System.Globalization
 @using LintingResults.Data
 @using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
 @inject IDbContextFactory<LintingDbContext> ContextFactory
 <h1>ScanDetails</h1>
 
     
 @if (result != null)
 {
-    <p>Scan on @result.dateInserted</p>
-    <FluentTabs Orientation="Orientation.Vertical">
-        @foreach(var (book, chapters) in result.LintingItems.OrderBy(i => bibleBookAbbreviations.IndexOf(i.Key.ToUpper())))
-        {
-            <FluentTab Label="@book">
-                @foreach(var (chapter, verses) in chapters)
+    <FluentStack Orientation="Orientation.Vertical">
+        <p>Scan on @result.dateInserted</p>
+        <FluentSelect Label="Select a book" TOption="KeyValuePair<string,Dictionary<string,List<LintingResultItem>>>" Items="result.LintingItems" 
+                      OptionValue="i => i.Key" OptionText="i => i.Key" @bind-SelectedOption="selectedItem"/>
+        <FluentStack Orientation="Orientation.Horizontal">
+            <FluentStack Orientation="Orientation.Vertical">
+                @if (selectedItem is { Key: not null, Value: not null })
                 {
-                    if (chapter == "Unknown")
+                    @foreach (var (chapter, verses) in selectedItem.Value)
                     {
-                        if (book == "Unknown")
+                        var issues = verses.Where(i => errorCodeStatus[i.errorId]).ToList();
+                        if (issues.Count == 0)
                         {
-                            <h3>Miscellaneous things </h3>
+                            continue;
+                        }
+                        if (chapter == "Unknown")
+                        {
+                            if (selectedItem.Key == "Unknown")
+                            {
+                                <h3>Miscellaneous things </h3>
+                            }
+                            else
+                            {
+                                <h3>Book level or unknown chapter</h3>
+                            }
                         }
                         else
                         {
-                            <h3>Book level or unknown chapter</h3>
+                            <h3>@chapter</h3>
                         }
+
+                        <ul>
+                            @foreach (var issue in issues)
+                            {
+                                <li>
+                                    <div>@issue.errorId @issue.verse @issue.message</div>
+                                </li>
+                            }
+                        </ul>
                     }
-                    else
-                    {
-                        <h3>@chapter</h3>
-                    }
-                    <ul>
-                        @foreach(var verse in verses)
-                        {
-                            <li>
-                                <div>@verse.verse @verse.message</div>
-                            </li>
-                        }
-                    </ul>
                 }
-        </FluentTab>
-        }
-    </FluentTabs>
+            </FluentStack>
+                <FluentStack Width="300px" Orientation="Orientation.Vertical" Style="position:absolute; right: 5px;">
+                    @foreach (var error in errorCodeStatus.OrderBy(i => i.Key))
+                    {
+                    <FluentCheckbox Label="@error.Key" ThreeState="false" Value="error.Value" ValueChanged="l => { errorCodeStatus[error.Key] = l; }"/>
+                    }
+                </FluentStack>
+        </FluentStack>
+    </FluentStack>
 }
 else
 {
@@ -49,15 +66,39 @@ else
 }
 
 @code {
+    private KeyValuePair<string,Dictionary<string, List<LintingResultItem>>> selectedItem = new();
+    
    [Parameter] 
     public int ScanId { get; set; }
     
     LintingResultDBModel? result;
 
+    private Dictionary<string, bool> errorCodeStatus = new();
+
     protected override void OnInitialized()
     {
         using var context = ContextFactory.CreateDbContext();
         result = context.LintingResults.FirstOrDefault(i => i.LintingResultDBModelId == ScanId);
+        if (result == null)
+        {
+            return;
+        }
+        result.LintingItems = result.LintingItems.OrderBy(i => bibleBookAbbreviations.IndexOf(i.Key)).ToDictionary(i => i.Key, i => i.Value);
+        foreach (var book in result.LintingItems)
+        {
+            if (selectedItem.Key == null)
+            {
+                selectedItem = book;
+            }
+            foreach (var chapter in book.Value)
+            {
+                foreach (var verse in chapter.Value)
+                {
+                    errorCodeStatus.TryAdd(verse.errorId, true);
+                }
+            }
+        }
+            
     }
 
     List<string> bibleBookAbbreviations = new List<string>
