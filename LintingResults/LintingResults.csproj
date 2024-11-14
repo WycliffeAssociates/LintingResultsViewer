@@ -25,7 +25,4 @@
         <Link>.dockerignore</Link>
       </Content>
     </ItemGroup>
-    <ItemGroup>
-      <Folder Include="Components\Controls\" />
-    </ItemGroup>
 </Project>

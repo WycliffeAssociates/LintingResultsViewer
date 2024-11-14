@@ -2,6 +2,7 @@
 @using System.Globalization
 @using LintingResults.Data
 @using Microsoft.EntityFrameworkCore
+@using LintingResults.Components.Controls
 @rendermode InteractiveServer
 @inject IDbContextFactory<LintingDbContext> ContextFactory
 <h1>ScanDetails</h1>
@@ -19,11 +20,12 @@
                 {
                     @foreach (var (chapter, verses) in selectedItem.Value)
                     {
-                        var issues = verses.Where(i => errorCodeStatus[i.errorId]).ToList();
+                        var issues = verses.Where(i => SelectedCodes.Contains(i.errorId)).ToList();
                         if (issues.Count == 0)
                         {
                             continue;
                         }
+
                         if (chapter == "Unknown")
                         {
                             if (selectedItem.Key == "Unknown")
@@ -44,19 +46,21 @@
                             @foreach (var issue in issues)
                             {
                                 <li>
-                                    <div>@issue.errorId @issue.verse @issue.message</div>
+                                    @if (issue.verse == "Unknown")
+                                    {
+                                        <div>(@issue.errorId) @issue.message</div>
+                                    }
+                                    else
+                                    {
+                                        <div>Verse @issue.verse (@issue.errorId) @issue.message</div>
+                                    }
                                 </li>
                             }
                         </ul>
                     }
                 }
             </FluentStack>
-                <FluentStack Width="300px" Orientation="Orientation.Vertical" Style="position:absolute; right: 5px;">
-                    @foreach (var error in errorCodeStatus.OrderBy(i => i.Key))
-                    {
-                    <FluentCheckbox Label="@error.Key" ThreeState="false" Value="error.Value" ValueChanged="l => { errorCodeStatus[error.Key] = l; }"/>
-                    }
-                </FluentStack>
+            <ErrorCodeFilter CodesAndLabels="ErrorCodes" @bind-SelectedCodes="SelectedCodes"/>
         </FluentStack>
     </FluentStack>
 }
@@ -73,7 +77,8 @@ else
     
     LintingResultDBModel? result;
 
-    private Dictionary<string, bool> errorCodeStatus = new();
+    private List<(string,string)> ErrorCodes = new ();
+    private HashSet<string> SelectedCodes = [];
 
     protected override void OnInitialized()
     {
@@ -84,6 +89,7 @@ else
             return;
         }
         result.LintingItems = result.LintingItems.OrderBy(i => bibleBookAbbreviations.IndexOf(i.Key)).ToDictionary(i => i.Key, i => i.Value);
+        var addedErrors = new HashSet<string>();
         foreach (var book in result.LintingItems)
         {
             if (selectedItem.Key == null)
@@ -94,7 +100,12 @@ else
             {
                 foreach (var verse in chapter.Value)
                 {
-                    errorCodeStatus.TryAdd(verse.errorId, true);
+                    if (addedErrors.Contains(verse.errorId))
+                    {
+                        continue;
+                    }
+                    ErrorCodes.Add((verse.errorId, verse.errorId));
+                    addedErrors.Add(verse.errorId);
                 }
             }
         }
@@ -114,6 +125,7 @@ else
     "PHP", "COL", "1TH", "2TH", "1TI", "2TI", "TIT", "PHM", "HEB",
     "JAS", "1PE", "2PE", "1JN", "2JN", "3JN", "JUD", "REV"
     };
+
 
 
 }

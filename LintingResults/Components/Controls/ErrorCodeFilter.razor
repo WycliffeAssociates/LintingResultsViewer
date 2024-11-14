@@ -1,0 +1,74 @@
+@rendermode InteractiveServer
+
+<FluentStack Width="300px" Orientation="Orientation.Vertical" Style="position:absolute; right: 5px;">
+    <h3>Error code filters</h3>
+    <FluentCheckbox Label="SelectAll" ThreeState="true" ShowIndeterminate="false" @bind-CheckState="AllSelected"/>
+    @foreach (var error in CodesAndLabels)
+    {
+        var selected = SelectedCodes.Contains(error.Item1);
+        <FluentCheckbox Label="@error.Item1" @bind-Value:get="selected" @bind-Value:set="j => SetChecked(error.Item1, j) "/>
+    }
+</FluentStack>
+
+@code {
+    private bool? AllSelected
+    {
+        get => SelectedCodes.SetEquals(AllCodes);
+        set
+        {
+            if (value == true)
+            {
+                if (SelectedCodes.Count == AllCodes.Count) return;
+                SelectedCodes = new HashSet<string>(AllCodes);
+            }
+            else
+            {
+                if (SelectedCodes.Count == 0) return;
+                SelectedCodes.Clear();
+            }
+
+            SelectedCodesChanged.InvokeAsync(SelectedCodes);
+            StateHasChanged();
+        }
+    }
+    private List<string> _codes = new();
+    private HashSet<string> AllCodes;
+    
+    [Parameter]
+    public List<(string, string)> CodesAndLabels { get; set; }
+    
+    [Parameter]
+    public HashSet<string> SelectedCodes { get; set; }
+    
+    [Parameter]
+    public EventCallback<HashSet<string>> SelectedCodesChanged { get; set; }
+
+    protected override void OnInitialized()
+    {
+        AllCodes = new HashSet<string>(CodesAndLabels.Select(c => c.Item1));
+        SelectedCodes = new HashSet<string>(AllCodes);
+        SelectedCodesChanged.InvokeAsync(SelectedCodes);
+    }
+
+    private async Task SetChecked(string errorKey, bool b)
+    {
+        Console.WriteLine("SetChecked");
+        if (b)
+        {
+            if (!SelectedCodes.Contains(errorKey))
+            {
+                SelectedCodes.Add(errorKey);
+                await SelectedCodesChanged.InvokeAsync(SelectedCodes);
+            }
+        }
+        else
+        {
+            if (SelectedCodes.Contains(errorKey))
+            {
+                SelectedCodes.Remove(errorKey);
+                await SelectedCodesChanged.InvokeAsync(SelectedCodes);
+            }
+        }
+    }
+
+}
