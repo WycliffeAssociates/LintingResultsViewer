@@ -57,7 +57,7 @@ jobs:
       - name: Build and conditional push API image
         uses: docker/build-push-action@v3
         with:
-          context: ./wacs-gitea
+          file: ./LintingResults/Dockerfile
           push: true
           tags: |
             ${{ env.TAG_SHA }}
