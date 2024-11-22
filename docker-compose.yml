@@ -3,11 +3,10 @@ services:
     image: wycliffeassociates/linting-results:${IMAGE_TAG}
     environment:
       - ServiceBusConnectionString=${ServiceBusConnectionString}
-      - ConnectionStrings__DefaultConnection="DataSource=/app/data/app.db;Cache=Shared"
+      - ConnectionStrings__DefaultConnection=DataSource=/data/app.db;Cache=Shared;Mode=ReadWriteCreate;
     volumes:
-      - data:/app/data/
+      - data:/data/
     ports:
       - 8092:80
-
 volumes:
   data:
