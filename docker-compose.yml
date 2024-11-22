@@ -6,6 +6,8 @@ services:
       - ConnectionStrings__DefaultConnection="DataSource=/app/data/database.db;Cache=Shared"
     volumes:
       - data:/app/database.db
+    ports:
+      - 8092:80
 
 volumes:
   data:
