@@ -7,6 +7,6 @@ services:
     volumes:
       - data:/data/
     ports:
-      - 8092:80
+      - 8092:8080
 volumes:
   data:
