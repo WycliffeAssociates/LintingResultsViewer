@@ -42,6 +42,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+builder.Services.AddSingleton<IErrorDescriptionSource, CsvErrorDescriptionSource>();
 builder.Services.AddHostedService<LintingResultListener>();
 
 var app = builder.Build();

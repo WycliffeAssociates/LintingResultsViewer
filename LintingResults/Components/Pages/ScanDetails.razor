@@ -1,10 +1,11 @@
 ﻿@page "/ScanDetails/{ScanId:int}"
-@using System.Globalization
+@inject IErrorDescriptionSource ErrorDescriptionSource
 @inject IConfiguration Configuration
 @inject IJSRuntime JSRuntime
 @using LintingResults.Data
 @using Microsoft.EntityFrameworkCore
 @using LintingResults.Components.Controls
+@using LintingResults.Services
 @rendermode InteractiveServer
 @inject IDbContextFactory<LintingDbContext> ContextFactory
 <h1>ScanDetails</h1>
@@ -101,6 +102,9 @@ else
         }
         result.LintingItems = result.LintingItems.OrderBy(i => bibleBookAbbreviations.IndexOf(i.Key)).ToDictionary(i => i.Key, i => i.Value);
         var addedErrors = new HashSet<string>();
+
+        var errorCodes = ErrorDescriptionSource.GetErrorDescriptions();
+        
         foreach (var book in result.LintingItems)
         {
             if (selectedItem.Key == null)
@@ -115,7 +119,7 @@ else
                     {
                         continue;
                     }
-                    ErrorCodes.Add((verse.errorId, verse.errorId));
+                    ErrorCodes.Add((verse.errorId,errorCodes.GetValueOrDefault(verse.errorId, verse.errorId)));
                     addedErrors.Add(verse.errorId);
                 }
             }

@@ -6,7 +6,7 @@
     @foreach (var error in CodesAndLabels.OrderBy(i => float.Parse(i.Item1) ))
     {
         var selected = SelectedCodes.Contains(error.Item1);
-        <FluentCheckbox Label="@error.Item1" @bind-Value:get="selected" @bind-Value:set="j => SetChecked(error.Item1, j) "/>
+        <FluentCheckbox Label="@error.Item2" @bind-Value:get="selected" @bind-Value:set="j => SetChecked(error.Item1, j) "/>
     }
 </FluentStack>
 
