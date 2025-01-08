@@ -1,18 +1,27 @@
 @page "/ListScans/{User}/{Repo}"
+@rendermode InteractiveServer
 @using LintingResults.Data
 @using Microsoft.EntityFrameworkCore
+@inject IConfiguration Configuration
+@inject IJSRuntime JSRuntime
 @inject IDbContextFactory<LintingDbContext> ContextFactory
 <h3>List of Scans for @User/@Repo</h3>
+<FluentStack VerticalGap="20" Orientation="Orientation.Vertical">
+    @if (baseUrlForWACS != null)
+    {
+        <FluentButton OnClick="ViewOnWACS" Appearance="Appearance.Accent">View on WACS</FluentButton>
+    }
 
-@if (lintingResults != null)
-{
-    <ul>
-        @foreach (var result in lintingResults)
-        {
-            <li><a href="/ScanDetails/@result.LintingResultDBModelId">@result.dateInserted</a></li>
-        }
-    </ul>
-}
+    @if (lintingResults != null)
+    {
+        <ul>
+            @foreach (var result in lintingResults)
+            {
+                <li><a href="/ScanDetails/@result.LintingResultDBModelId">@result.dateInserted</a></li>
+            }
+        </ul>
+    }
+</FluentStack>
 
 @code {
 
@@ -22,6 +31,8 @@
     [Parameter]
     public string Repo { get; set; }
 
+    private string? baseUrlForWACS;
+
     IEnumerable<LintingResultDBModel> lintingResults = [];
 
     protected override void OnInitialized()
@@ -29,5 +40,19 @@
         using var context = ContextFactory.CreateDbContext();
         var repo = context.Repos.Include(r => r.LintingResults).FirstOrDefault(r => r.RepoName == Repo && r.User == User);
         lintingResults = repo?.LintingResults;
+        baseUrlForWACS = Configuration["WACSUrl"] ?? null;
+        if (baseUrlForWACS == null)
+        {
+            return;
+        }
+        if (!baseUrlForWACS.EndsWith("/"))
+        {
+            baseUrlForWACS += "/";
+        }
+    }
+
+    private void ViewOnWACS()
+    {
+        JSRuntime.InvokeVoidAsync("open", baseUrlForWACS + User + "/" + Repo);
     }
 }

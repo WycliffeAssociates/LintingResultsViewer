@@ -1,5 +1,7 @@
 ﻿@page "/ScanDetails/{ScanId:int}"
 @using System.Globalization
+@inject IConfiguration Configuration
+@inject IJSRuntime JSRuntime
 @using LintingResults.Data
 @using Microsoft.EntityFrameworkCore
 @using LintingResults.Components.Controls
@@ -11,8 +13,14 @@
 @if (result != null)
 {
     <FluentStack Orientation="Orientation.Vertical">
-        <p>Scan on @result.dateInserted</p>
-        <FluentSelect Label="Select a book" TOption="KeyValuePair<string,Dictionary<string,List<LintingResultItem>>>" Items="result.LintingItems" 
+        <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center">
+            <FluentLabel>Scan on @result.dateInserted</FluentLabel>
+            @if (baseUrlForWACS != null)
+            {
+                <FluentButton OnClick="ViewOnWACS" Appearance="Appearance.Accent">View on WACS</FluentButton>
+            }
+        </FluentStack>
+        <FluentSelect Label="Select a book" TOption="KeyValuePair<string, Dictionary<string, List<LintingResultItem>>>" Items="result.LintingItems"
                       OptionValue="i => i.Key" OptionText="i => i.Key" @bind-SelectedOption="selectedItem"/>
         <FluentStack Orientation="Orientation.Horizontal">
             <FluentStack Orientation="Orientation.Vertical">
@@ -79,6 +87,9 @@ else
 
     private List<(string,string)> ErrorCodes = new ();
     private HashSet<string> SelectedCodes = [];
+    private string? baseUrlForWACS;
+    private string Repo { get; set; }
+    private string User { get; set; }
 
     protected override void OnInitialized()
     {
@@ -109,8 +120,22 @@ else
                 }
             }
         }
+
+        var repo = context.Repos.FirstOrDefault(i => i.RepoId == result.RepoId);
+        User = repo.User;
+        Repo = repo.RepoName;
+        baseUrlForWACS = Configuration["WACSUrl"] ?? null;
+        if (baseUrlForWACS == null)
+        {
+            return;
+        }
+        if (!baseUrlForWACS.EndsWith("/"))
+        {
+            baseUrlForWACS += "/";
+        }
             
     }
+
 
     List<string> bibleBookAbbreviations = new List<string>
     {
@@ -125,6 +150,11 @@ else
     "PHP", "COL", "1TH", "2TH", "1TI", "2TI", "TIT", "PHM", "HEB",
     "JAS", "1PE", "2PE", "1JN", "2JN", "3JN", "JUD", "REV"
     };
+
+    private void ViewOnWACS()
+    {
+    JSRuntime.InvokeVoidAsync("open", baseUrlForWACS + User + "/" + Repo);
+    }
 
 
 
