@@ -3,7 +3,7 @@
 <FluentStack Width="300px" Orientation="Orientation.Vertical" Style="position:absolute; right: 5px;">
     <h3>Error code filters</h3>
     <FluentCheckbox Label="SelectAll" ThreeState="true" ShowIndeterminate="false" @bind-CheckState="AllSelected"/>
-    @foreach (var error in CodesAndLabels)
+    @foreach (var error in CodesAndLabels.OrderBy(i => float.Parse(i.Item1) ))
     {
         var selected = SelectedCodes.Contains(error.Item1);
         <FluentCheckbox Label="@error.Item1" @bind-Value:get="selected" @bind-Value:set="j => SetChecked(error.Item1, j) "/>
@@ -52,7 +52,6 @@
 
     private async Task SetChecked(string errorKey, bool b)
     {
-        Console.WriteLine("SetChecked");
         if (b)
         {
             if (!SelectedCodes.Contains(errorKey))
