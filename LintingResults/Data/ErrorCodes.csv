@@ -71,6 +71,7 @@ Error,Description
 52.3,Equals sign in text.
 53,Uncommon or invalid marker.
 54,Missing verse marker or extra text near a reference.
+54.1,Unmarked text before verse
 55,Unresolved translation conflict.
 56,Angle bracket not closed.
 57,BTT Writer artifact in text.
