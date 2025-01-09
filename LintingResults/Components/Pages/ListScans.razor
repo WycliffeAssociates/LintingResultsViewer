@@ -3,13 +3,13 @@
 @using LintingResults.Data
 @using Microsoft.EntityFrameworkCore
 @inject IConfiguration Configuration
-@inject IJSRuntime JSRuntime
 @inject IDbContextFactory<LintingDbContext> ContextFactory
 <h3>List of Scans for @User/@Repo</h3>
 <FluentStack VerticalGap="20" Orientation="Orientation.Vertical">
+
     @if (baseUrlForWACS != null)
     {
-        <FluentButton OnClick="ViewOnWACS" Appearance="Appearance.Accent">View on WACS</FluentButton>
+        <FluentAnchor Href="@($"{baseUrlForWACS}{User}/{Repo}")" Target="_blank" Appearance="Appearance.Accent">View on WACS</FluentAnchor>
     }
 
     @if (lintingResults != null)
@@ -49,10 +49,5 @@
         {
             baseUrlForWACS += "/";
         }
-    }
-
-    private void ViewOnWACS()
-    {
-        JSRuntime.InvokeVoidAsync("open", baseUrlForWACS + User + "/" + Repo);
     }
 }

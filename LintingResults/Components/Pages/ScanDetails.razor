@@ -1,7 +1,6 @@
 ﻿@page "/ScanDetails/{ScanId:int}"
 @inject IErrorDescriptionSource ErrorDescriptionSource
 @inject IConfiguration Configuration
-@inject IJSRuntime JSRuntime
 @using LintingResults.Data
 @using Microsoft.EntityFrameworkCore
 @using LintingResults.Components.Controls
@@ -18,7 +17,7 @@
             <FluentLabel>Scan on @result.dateInserted</FluentLabel>
             @if (baseUrlForWACS != null)
             {
-                <FluentButton OnClick="ViewOnWACS" Appearance="Appearance.Accent">View on WACS</FluentButton>
+                <FluentAnchor Href="@($"{baseUrlForWACS}{User}/{Repo}")" Appearance="Appearance.Accent" Target="_blank">View on WACS</FluentAnchor>
             }
         </FluentStack>
         <FluentSelect Label="Select a book" TOption="KeyValuePair<string, Dictionary<string, List<LintingResultItem>>>" Items="result.LintingItems"
@@ -154,12 +153,4 @@ else
     "PHP", "COL", "1TH", "2TH", "1TI", "2TI", "TIT", "PHM", "HEB",
     "JAS", "1PE", "2PE", "1JN", "2JN", "3JN", "JUD", "REV"
     };
-
-    private void ViewOnWACS()
-    {
-    JSRuntime.InvokeVoidAsync("open", baseUrlForWACS + User + "/" + Repo);
-    }
-
-
-
 }
