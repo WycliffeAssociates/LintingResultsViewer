@@ -22,55 +22,59 @@
         </FluentStack>
         <FluentSelect Label="Select a book" TOption="KeyValuePair<string, Dictionary<string, List<LintingResultItem>>>" Items="result.LintingItems"
                       OptionValue="i => i.Key" OptionText="i => i.Key" @bind-SelectedOption="selectedItem"/>
-        <FluentStack Orientation="Orientation.Horizontal">
-            <FluentStack Orientation="Orientation.Vertical">
-                @if (selectedItem is { Key: not null, Value: not null })
-                {
-                    @foreach (var (chapter, verses) in selectedItem.Value)
+        </FluentStack>
+        <div class="details-container">
+            <article class="details-main-content">
+                <FluentStack Orientation="Orientation.Vertical">
+                    @if (selectedItem is { Key: not null, Value: not null })
                     {
-                        var issues = verses.Where(i => SelectedCodes.Contains(i.errorId)).ToList();
-                        if (issues.Count == 0)
+                        @foreach (var (chapter, verses) in selectedItem.Value)
                         {
-                            continue;
-                        }
-
-                        if (chapter == "Unknown")
-                        {
-                            if (selectedItem.Key == "Unknown")
+                            var issues = verses.Where(i => SelectedCodes.Contains(i.errorId)).ToList();
+                            if (issues.Count == 0)
                             {
-                                <h3>Miscellaneous things </h3>
+                                continue;
+                            }
+
+                            if (chapter == "Unknown")
+                            {
+                                if (selectedItem.Key == "Unknown")
+                                {
+                                    <h3>Miscellaneous things </h3>
+                                }
+                                else
+                                {
+                                    <h3>Book level or unknown chapter</h3>
+                                }
                             }
                             else
                             {
-                                <h3>Book level or unknown chapter</h3>
+                                <h3>@chapter</h3>
                             }
-                        }
-                        else
-                        {
-                            <h3>@chapter</h3>
-                        }
 
-                        <ul>
-                            @foreach (var issue in issues)
-                            {
-                                <li>
-                                    @if (issue.verse == "Unknown")
-                                    {
-                                        <div>(@issue.errorId) @issue.message</div>
-                                    }
-                                    else
-                                    {
-                                        <div>Verse @issue.verse (@issue.errorId) @issue.message</div>
-                                    }
-                                </li>
-                            }
-                        </ul>
+                            <ul>
+                                @foreach (var issue in issues)
+                                {
+                                    <li>
+                                        @if (issue.verse == "Unknown")
+                                        {
+                                            <div>(@issue.errorId) @issue.message</div>
+                                        }
+                                        else
+                                        {
+                                            <div>Verse @issue.verse (@issue.errorId) @issue.message</div>
+                                        }
+                                    </li>
+                                }
+                            </ul>
+                        }
                     }
-                }
-            </FluentStack>
-            <ErrorCodeFilter CodesAndLabels="ErrorCodes" @bind-SelectedCodes="SelectedCodes"/>
-        </FluentStack>
-    </FluentStack>
+                </FluentStack>
+            </article>
+            <aside class="details-filter">
+                <ErrorCodeFilter CodesAndLabels="ErrorCodes" @bind-SelectedCodes="SelectedCodes"/>
+            </aside>
+        </div>
 }
 else
 {

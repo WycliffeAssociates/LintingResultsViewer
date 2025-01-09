@@ -189,3 +189,24 @@ code {
         right: unset;
     }
 }
+.details-container {
+    display: flex;
+    margin-top: 5px;
+    height: calc(100vh - 86px - 175px); /* Adjust the heights of header and footer */
+    overflow: hidden;
+}
+
+.details-main-content {
+    flex: 1;
+    overflow-y: auto;
+    height: calc(100vh - 86px - 175px); /* Adjust the heights of header and footer */
+}
+
+.details-filter {
+    width: 305px;
+    padding-left: 5px;
+    position: sticky;
+    top: 0;
+    height: calc(100vh - 86px - 175px); /* Adjust the heights of header and footer */
+    overflow-y: auto;
+}

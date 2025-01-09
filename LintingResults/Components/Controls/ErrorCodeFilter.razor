@@ -1,6 +1,6 @@
 @rendermode InteractiveServer
 
-<FluentStack Width="300px" Orientation="Orientation.Vertical" Style="position:absolute; right: 5px;">
+<FluentStack Width="300px" Orientation="Orientation.Vertical">
     <h3>Error code filters</h3>
     <FluentCheckbox Label="SelectAll" ThreeState="true" ShowIndeterminate="false" @bind-CheckState="AllSelected"/>
     @foreach (var error in CodesAndLabels.OrderBy(i => float.Parse(i.Item1) ))
