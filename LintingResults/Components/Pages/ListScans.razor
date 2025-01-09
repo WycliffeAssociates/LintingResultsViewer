@@ -17,7 +17,9 @@
         <ul>
             @foreach (var result in lintingResults)
             {
-                <li><a href="/ScanDetails/@result.LintingResultDBModelId">@result.dateInserted</a></li>
+                <li>
+                    <FluentAnchor Appearance="Appearance.Hypertext" Href="@("/ScanDetails/" + result.LintingResultDBModelId)">@result.dateInserted</FluentAnchor>
+                </li>
             }
         </ul>
     }
