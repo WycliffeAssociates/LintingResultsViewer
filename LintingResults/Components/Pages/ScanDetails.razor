@@ -2,79 +2,49 @@
 @inject IErrorDescriptionSource ErrorDescriptionSource
 @inject IConfiguration Configuration
 @using LintingResults.Data
-@using Microsoft.EntityFrameworkCore
 @using LintingResults.Components.Controls
+@using Microsoft.EntityFrameworkCore
 @using LintingResults.Services
 @rendermode InteractiveServer
 @inject IDbContextFactory<LintingDbContext> ContextFactory
-<h1>ScanDetails</h1>
+<h1>Details for scan on @result.dateInserted</h1>
 
     
 @if (result != null)
 {
-    <FluentStack Orientation="Orientation.Vertical">
-        <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center">
-            <FluentLabel>Scan on @result.dateInserted</FluentLabel>
-            @if (baseUrlForWACS != null)
-            {
-                <FluentAnchor Href="@($"{baseUrlForWACS}{User}/{Repo}")" Appearance="Appearance.Accent" Target="_blank">View on WACS</FluentAnchor>
-            }
-        </FluentStack>
-        <FluentSelect Label="Select a book" TOption="KeyValuePair<string, Dictionary<string, List<LintingResultItem>>>" Items="result.LintingItems"
+    <FluentToolbar Style="width: 100%">
+        <FluentSelect Disabled="ShowAll" Label="Select a book" TOption="KeyValuePair<string, Dictionary<string, List<LintingResultItem>>>" Items="result.LintingItems"
                       OptionValue="i => i.Key" OptionText="i => i.Key" @bind-SelectedOption="selectedItem"/>
-        </FluentStack>
-        <div class="details-container">
-            <article class="details-main-content">
-                <FluentStack Orientation="Orientation.Vertical">
+        <FluentSwitch @bind-Value="ShowAll" Label="Show All"/>
+        @if (baseUrlForWACS != null)
+        {
+            <FluentAnchor slot="end" Href="@($"{baseUrlForWACS}{User}/{Repo}")" Appearance="Appearance.Accent" Target="_blank">View on WACS</FluentAnchor>
+        }
+    </FluentToolbar>
+    <div class="details-container">
+        <article class="details-main-content">
+            <FluentStack Orientation="Orientation.Vertical">
+                @if (!ShowAll)
+                {
                     @if (selectedItem is { Key: not null, Value: not null })
                     {
-                        @foreach (var (chapter, verses) in selectedItem.Value)
-                        {
-                            var issues = verses.Where(i => SelectedCodes.Contains(i.errorId)).ToList();
-                            if (issues.Count == 0)
-                            {
-                                continue;
-                            }
-
-                            if (chapter == "Unknown")
-                            {
-                                if (selectedItem.Key == "Unknown")
-                                {
-                                    <h3>Miscellaneous things </h3>
-                                }
-                                else
-                                {
-                                    <h3>Book level or unknown chapter</h3>
-                                }
-                            }
-                            else
-                            {
-                                <h3>@chapter</h3>
-                            }
-
-                            <ul>
-                                @foreach (var issue in issues)
-                                {
-                                    <li>
-                                        @if (issue.verse == "Unknown")
-                                        {
-                                            <div>(@issue.errorId) @issue.message</div>
-                                        }
-                                        else
-                                        {
-                                            <div>Verse @issue.verse (@issue.errorId) @issue.message</div>
-                                        }
-                                    </li>
-                                }
-                            </ul>
-                        }
+                    <IssueList Book="selectedItem" SelectedCodes="SelectedCodes"/>
                     }
-                </FluentStack>
-            </article>
-            <aside class="details-filter">
-                <ErrorCodeFilter CodesAndLabels="ErrorCodes" @bind-SelectedCodes="SelectedCodes"/>
-            </aside>
-        </div>
+                }
+                else
+                {
+                    foreach (var book in result.LintingItems)
+                    {
+                        <h2>@book.Key</h2>
+                        <IssueList Book="book" SelectedCodes="SelectedCodes"/>
+                    }
+                }
+            </FluentStack>
+        </article>
+        <aside class="details-filter">
+            <ErrorCodeFilter CodesAndLabels="ErrorCodes" @bind-SelectedCodes="SelectedCodes"/>
+        </aside>
+    </div>
 }
 else
 {
@@ -94,6 +64,7 @@ else
     private string? baseUrlForWACS;
     private string Repo { get; set; }
     private string User { get; set; }
+    private bool ShowAll { get; set; }
 
     protected override void OnInitialized()
     {

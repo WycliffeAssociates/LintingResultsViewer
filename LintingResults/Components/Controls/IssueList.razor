@@ -1,0 +1,53 @@
+@using LintingResults.Data
+@rendermode InteractiveServer
+
+@foreach (var (chapter, verses) in Book.Value)
+{
+    var issues = verses.Where(i => SelectedCodes.Contains(i.errorId)).ToList();
+    if (issues.Count == 0)
+    {
+        continue;
+    }
+
+    if (chapter == "Unknown")
+    {
+        if (Book.Key == "Unknown")
+        {
+            <h3>Miscellaneous things </h3>
+        }
+        else
+        {
+            <h3>Book level or unknown chapter</h3>
+        }
+    }
+    else
+    {
+        <h3>@chapter</h3>
+    }
+
+    <ul>
+        <Virtualize Context="issue" Items="issues">
+            <li>
+                @if (issue.verse == "Unknown")
+                {
+                    <div>(@issue.errorId) @issue.message</div>
+                }
+                else
+                {
+                    <div>Verse @issue.verse (@issue.errorId) @issue.message</div>
+                }
+            </li>
+        </Virtualize>
+    </ul>
+}
+
+@code {
+    
+    [Parameter]
+    [EditorRequired]
+    public required KeyValuePair<string, Dictionary<string,List<LintingResultItem>>> Book { get; set; }
+    
+    [Parameter]
+    [EditorRequired]
+    public required HashSet<string> SelectedCodes { get; set; }
+}
