@@ -2,6 +2,9 @@ Error,Description
 0.1,Mixed case word in a single occurrence.
 0.2,Mixed case words occurring more than once each.
 0.3,Too many mixed case words; reporting canceled.
+0.4,Mixed case word
+0.5,Mixed case words occur more than once each
+0.6,Too many mixed case words; reporting canceled.
 1,Empty verse.
 2,Verse fragment.
 3,Verse is entirely ASCII.
@@ -107,5 +110,7 @@ Error,Description
 77,Empty \wj \wj* pair.
 78,Stranded backslash at the end of a line.
 79,Null bytes found in the file.
+79.1,File is entirely null bytes
 80,Incomplete file.
+80.1,Peripheral file not checked
 81,Missing \toc3 tag.
