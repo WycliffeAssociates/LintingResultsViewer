@@ -70,6 +70,26 @@ app.MapRazorComponents<App>()
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 
+// API endpoint to get the most recent linting result for a repository
+app.MapGet("/api/linting/{username}/{reponame}", async (string username, string reponame, IDbContextFactory<LintingDbContext> contextFactory) =>
+{
+    using var context = contextFactory.CreateDbContext();
+    var repo = await context.Repos
+        .Include(r => r.LintingResults)
+        .FirstOrDefaultAsync(r => r.User == username && r.RepoName == reponame);
+    
+    if (repo == null || repo.LintingResults == null || !repo.LintingResults.Any())
+    {
+        return Results.NotFound(new { message = $"No linting results found for {username}/{reponame}" });
+    }
+    
+    var mostRecentResult = repo.LintingResults
+        .OrderByDescending(lr => lr.dateInserted)
+        .First();
+    
+    return Results.Ok(mostRecentResult);
+});
+
 // Apply any pending migrations on startup
 using (var scope = app.Services.CreateScope())
 {
