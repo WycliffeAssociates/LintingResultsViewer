@@ -35,13 +35,13 @@
 
     private string? baseUrlForWACS;
 
-    IEnumerable<LintingResultDBModel> lintingResults = [];
+    IEnumerable<LintingResultDBModel>? lintingResults = [];
 
     protected override void OnInitialized()
     {
         using var context = ContextFactory.CreateDbContext();
         var repo = context.Repos.Include(r => r.LintingResults).FirstOrDefault(r => r.RepoName == Repo && r.User == User);
-        lintingResults = repo?.LintingResults;
+        lintingResults = repo?.LintingResults?.OrderByDescending(lr => lr.dateInserted);
         baseUrlForWACS = Configuration["WACSUrl"] ?? null;
         if (baseUrlForWACS == null)
         {
