@@ -49,12 +49,22 @@
         AllCodes = new HashSet<string>(CodesAndLabels.Select(c => c.Item1));
         
         // Get default disabled rules from configuration (comma-separated list)
-        var disabledRulesConfig = Configuration["DefaultDisabledLintingRules"] ?? "3,37";
-        var disabledRules = disabledRulesConfig.Split(',', StringSplitOptions.RemoveEmptyEntries)
-            .Select(r => r.Trim())
-            .ToHashSet();
+        var disabledRulesConfig = Configuration["DefaultDisabledLintingRules"];
         
-        SelectedCodes = new HashSet<string>(AllCodes.Where(code => !disabledRules.Contains(code)));
+        if (!string.IsNullOrEmpty(disabledRulesConfig))
+        {
+            var disabledRules = disabledRulesConfig.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(r => r.Trim())
+                .ToHashSet();
+            
+            SelectedCodes = new HashSet<string>(AllCodes.Where(code => !disabledRules.Contains(code)));
+        }
+        else
+        {
+            // If not configured, include all rules
+            SelectedCodes = new HashSet<string>(AllCodes);
+        }
+        
         SelectedCodesChanged.InvokeAsync(SelectedCodes);
     }
 
