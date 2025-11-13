@@ -48,8 +48,8 @@
     {
         AllCodes = new HashSet<string>(CodesAndLabels.Select(c => c.Item1));
         
-        // Get disabled rules from configuration (comma-separated list)
-        var disabledRulesConfig = Configuration["DisabledLintingRules"] ?? "3,37";
+        // Get default disabled rules from configuration (comma-separated list)
+        var disabledRulesConfig = Configuration["DefaultDisabledLintingRules"] ?? "3,37";
         var disabledRules = disabledRulesConfig.Split(',', StringSplitOptions.RemoveEmptyEntries)
             .Select(r => r.Trim())
             .ToHashSet();
