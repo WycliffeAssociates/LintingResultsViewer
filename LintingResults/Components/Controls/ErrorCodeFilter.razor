@@ -1,3 +1,4 @@
+@inject IConfiguration Configuration
 @rendermode InteractiveServer
 
 <FluentStack Orientation="Orientation.Vertical">
@@ -46,8 +47,14 @@
     protected override void OnInitialized()
     {
         AllCodes = new HashSet<string>(CodesAndLabels.Select(c => c.Item1));
-        // Disable rules 3 and 37 by default
-        SelectedCodes = new HashSet<string>(AllCodes.Where(code => code != "3" && code != "37"));
+        
+        // Get disabled rules from configuration (comma-separated list)
+        var disabledRulesConfig = Configuration["DisabledLintingRules"] ?? "3,37";
+        var disabledRules = disabledRulesConfig.Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(r => r.Trim())
+            .ToHashSet();
+        
+        SelectedCodes = new HashSet<string>(AllCodes.Where(code => !disabledRules.Contains(code)));
         SelectedCodesChanged.InvokeAsync(SelectedCodes);
     }
 
