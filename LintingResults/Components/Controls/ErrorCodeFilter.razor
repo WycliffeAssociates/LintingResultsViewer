@@ -46,7 +46,8 @@
     protected override void OnInitialized()
     {
         AllCodes = new HashSet<string>(CodesAndLabels.Select(c => c.Item1));
-        SelectedCodes = new HashSet<string>(AllCodes);
+        // Disable rules 3 and 37 by default
+        SelectedCodes = new HashSet<string>(AllCodes.Where(code => code != "3" && code != "37"));
         SelectedCodesChanged.InvokeAsync(SelectedCodes);
     }
 
