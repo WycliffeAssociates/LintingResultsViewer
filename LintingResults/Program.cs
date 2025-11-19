@@ -90,6 +90,58 @@ app.MapGet("/api/linting/{username}/{reponame}", async (string username, string 
     return Results.Ok(mostRecentResult);
 });
 
+// API endpoint to download linting results as CSV
+app.MapGet("/api/linting/csv/{scanId:int}", async (int scanId, IDbContextFactory<LintingDbContext> contextFactory) =>
+{
+    using var context = contextFactory.CreateDbContext();
+    var result = await context.LintingResults.FirstOrDefaultAsync(lr => lr.LintingResultDBModelId == scanId);
+    
+    if (result == null)
+    {
+        return Results.NotFound(new { message = $"No linting result found for scan ID {scanId}" });
+    }
+    
+    var repo = await context.Repos.FirstOrDefaultAsync(r => r.RepoId == result.RepoId);
+    
+    using var memoryStream = new MemoryStream();
+    using var writer = new StreamWriter(memoryStream);
+    using var csv = new CsvHelper.CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture);
+    
+    // Write CSV header
+    csv.WriteField("Book");
+    csv.WriteField("Chapter");
+    csv.WriteField("Verse");
+    csv.WriteField("Error ID");
+    csv.WriteField("Message");
+    csv.NextRecord();
+    
+    // Write CSV data
+    foreach (var book in result.LintingItems)
+    {
+        foreach (var chapter in book.Value)
+        {
+            foreach (var item in chapter.Value)
+            {
+                csv.WriteField(book.Key);
+                csv.WriteField(chapter.Key);
+                csv.WriteField(item.verse);
+                csv.WriteField(item.errorId);
+                csv.WriteField(item.message);
+                csv.NextRecord();
+            }
+        }
+    }
+    
+    await writer.FlushAsync();
+    memoryStream.Position = 0;
+    
+    var fileName = repo != null 
+        ? $"{repo.User}_{repo.RepoName}_{result.dateInserted:yyyy-MM-dd_HH-mm-ss}.csv"
+        : $"linting_results_{scanId}.csv";
+    
+    return Results.File(memoryStream.ToArray(), "text/csv", fileName);
+});
+
 // Apply any pending migrations on startup
 using (var scope = app.Services.CreateScope())
 {

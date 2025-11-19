@@ -1,6 +1,7 @@
 ﻿@page "/ScanDetails/{ScanId:int}"
 @inject IErrorDescriptionSource ErrorDescriptionSource
 @inject IConfiguration Configuration
+@inject NavigationManager NavigationManager
 @using LintingResults.Data
 @using LintingResults.Components.Controls
 @using Microsoft.EntityFrameworkCore
@@ -20,6 +21,7 @@
         {
             <FluentAnchor slot="end" Href="@($"{baseUrlForWACS}{User}/{Repo}")" Appearance="Appearance.Accent" Target="_blank">View on WACS</FluentAnchor>
         }
+        <FluentButton slot="end" Appearance="Appearance.Accent" OnClick="@DownloadCsv">Download CSV</FluentButton>
     </FluentToolbar>
     <div class="details-container">
         <article class="details-main-content">
@@ -112,6 +114,11 @@ else
             baseUrlForWACS += "/";
         }
             
+    }
+
+    private void DownloadCsv()
+    {
+        NavigationManager.NavigateTo($"/api/linting/csv/{ScanId}", true);
     }
 
 
