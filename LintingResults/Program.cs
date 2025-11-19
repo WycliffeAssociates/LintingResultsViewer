@@ -6,6 +6,7 @@ using LintingResults.Components;
 using LintingResults.Components.Account;
 using LintingResults.Components.Pages;
 using LintingResults.Data;
+using LintingResults.Helpers;
 using LintingResults.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -103,23 +104,9 @@ app.MapGet("/api/linting/csv/{scanId:int}", async (int scanId, IDbContextFactory
     
     var repo = await context.Repos.FirstOrDefaultAsync(r => r.RepoId == result.RepoId);
     
-    // Bible book order (same as displayed on the scan details page)
-    var bibleBookAbbreviations = new List<string>
-    {
-        // Old Testament
-        "GEN", "EXO", "LEV", "NUM", "DEU", "JOS", "JDG", "RUT", "1SA", "2SA",
-        "1KI", "2KI", "1CH", "2CH", "EZR", "NEH", "EST", "JOB", "PSA", "PRO",
-        "ECC", "SNG", "ISA", "JER", "LAM", "EZK", "DAN", "HOS", "JOL", "AMO",
-        "OBA", "JON", "MIC", "NAM", "HAB", "ZEP", "HAG", "ZEC", "MAL",
-        // New Testament
-        "MAT", "MRK", "LUK", "JHN", "ACT", "ROM", "1CO", "2CO", "GAL", "EPH",
-        "PHP", "COL", "1TH", "2TH", "1TI", "2TI", "TIT", "PHM", "HEB",
-        "JAS", "1PE", "2PE", "1JN", "2JN", "3JN", "JUD", "REV"
-    };
-    
-    // Order books by biblical order
+    // Order books by biblical order using shared utility
     var orderedLintingItems = result.LintingItems
-        .OrderBy(i => bibleBookAbbreviations.IndexOf(i.Key))
+        .OrderBy(i => BibleBookOrder.GetIndex(i.Key))
         .ToDictionary(i => i.Key, i => i.Value);
     
     using var memoryStream = new MemoryStream();
