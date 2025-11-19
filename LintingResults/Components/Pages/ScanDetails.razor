@@ -125,6 +125,8 @@ else
 
     private void DownloadCsv()
     {
-        NavigationManager.NavigateTo($"/api/linting/csv/{ScanId}", true);
+        // Pass selected error codes as query parameter
+        var selectedCodesParam = string.Join(",", SelectedCodes);
+        NavigationManager.NavigateTo($"/api/linting/csv/{ScanId}?selectedCodes={Uri.EscapeDataString(selectedCodesParam)}", true);
     }
 }

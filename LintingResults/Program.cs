@@ -92,7 +92,7 @@ app.MapGet("/api/linting/{username}/{reponame}", async (string username, string 
 });
 
 // API endpoint to download linting results as CSV
-app.MapGet("/api/linting/csv/{scanId:int}", async (int scanId, IDbContextFactory<LintingDbContext> contextFactory) =>
+app.MapGet("/api/linting/csv/{scanId:int}", async (int scanId, string? selectedCodes, IDbContextFactory<LintingDbContext> contextFactory) =>
 {
     using var context = contextFactory.CreateDbContext();
     var result = await context.LintingResults.FirstOrDefaultAsync(lr => lr.LintingResultDBModelId == scanId);
@@ -103,6 +103,15 @@ app.MapGet("/api/linting/csv/{scanId:int}", async (int scanId, IDbContextFactory
     }
     
     var repo = await context.Repos.FirstOrDefaultAsync(r => r.RepoId == result.RepoId);
+    
+    // Parse selected error codes filter
+    HashSet<string>? selectedErrorCodes = null;
+    if (!string.IsNullOrWhiteSpace(selectedCodes))
+    {
+        selectedErrorCodes = selectedCodes.Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(c => c.Trim())
+            .ToHashSet();
+    }
     
     // Order books by biblical order using shared utility
     var orderedLintingItems = result.LintingItems
@@ -121,13 +130,19 @@ app.MapGet("/api/linting/csv/{scanId:int}", async (int scanId, IDbContextFactory
     csv.WriteField("Message");
     csv.NextRecord();
     
-    // Write CSV data in biblical book order
+    // Write CSV data in biblical book order, filtered by selected error codes
     foreach (var book in orderedLintingItems)
     {
         foreach (var chapter in book.Value)
         {
             foreach (var item in chapter.Value)
             {
+                // Filter by selected error codes if specified
+                if (selectedErrorCodes != null && !selectedErrorCodes.Contains(item.errorId))
+                {
+                    continue;
+                }
+                
                 csv.WriteField(book.Key);
                 csv.WriteField(chapter.Key);
                 csv.WriteField(item.verse);
