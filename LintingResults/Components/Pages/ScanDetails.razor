@@ -10,24 +10,24 @@
 @inject IDbContextFactory<LintingDbContext> ContextFactory
 <h1>Details for scan on @result.dateInserted</h1>
 
-    
+
 @if (result != null)
 {
     <FluentToolbar Style="width: 100%">
         <FluentSelect Disabled="ShowAll" Label="Select a book" TOption="KeyValuePair<string, Dictionary<string, List<LintingResultItem>>>" Items="result.LintingItems"
                       OptionValue="i => i.Key" OptionText="i => i.Key" @bind-SelectedOption="selectedItem"/>
         <FluentSwitch @bind-Value="ShowAll" Label="Show All"/>
-        @if (baseUrlForWACS != null)
-        {
-            <FluentAnchor slot="end" Href="@($"{baseUrlForWACS}{User}/{Repo}")" Appearance="Appearance.Accent" Target="_blank">
-                <FluentIcon Value="@(new Icons.Regular.Size20.Globe())" slot="start"/>
-                View on WACS
-            </FluentAnchor>
-        }
-        <FluentButton slot="end" Appearance="Appearance.Accent" OnClick="@DownloadCsv">
-            <FluentIcon Value="@(new Icons.Regular.Size20.ArrowDownload())" slot="start"/>
-            Download Results
-        </FluentButton>
+            @if (baseUrlForWACS != null)
+            {
+                <FluentAnchor slot="end" Href="@($"{baseUrlForWACS}{User}/{Repo}")" Appearance="Appearance.Accent" Target="_blank">
+                    <FluentIcon Color="Color.Fill"  Value="@(new Icons.Regular.Size20.Globe())" slot="start"/>
+                    View on WACS
+                </FluentAnchor>
+            }
+            <FluentButton slot="end" Appearance="Appearance.Accent" OnClick="@DownloadCsv" Style="margin-left: .1em;">
+                <FluentIcon Color="Color.Fill" Value="@(new Icons.Regular.Size20.ArrowDownload())" slot="start"/>
+                Download Results
+            </FluentButton>
     </FluentToolbar>
     <div class="details-container">
         <article class="details-main-content">
