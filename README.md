@@ -51,6 +51,7 @@ Using Docker:
 docker run -p 8080:8080 \
   -e ServiceBusConnectionString="<your-connection-string>" \
   -e ConnectionStrings__DefaultConnection="DataSource=/data/app.db;Cache=Shared" \
+  -e DefaultDisabledLintingRules="3,37" \
   -v linting-data:/data \
   linting-results
 ```
@@ -59,6 +60,7 @@ Using Docker Compose:
 ```bash
 export ServiceBusConnectionString="<your-connection-string>"
 export IMAGE_TAG="latest"
+export DefaultDisabledLintingRules="3,37"
 docker-compose up
 ```
 
@@ -73,6 +75,7 @@ The application is configured via `appsettings.json` or environment variables. B
 | `ServiceBusConnectionString` | Azure Service Bus connection string for receiving linting results | `Endpoint=sb://...` | Yes |
 | `ConnectionStrings__DefaultConnection` | SQLite database connection string | `DataSource=Data/app.db;Cache=Shared` | Yes |
 | `WACSUrl` | Base URL for WACS (Wycliffe Associates Content Server) links | `https://content.bibletranslationtools.org` | No |
+| `DefaultDisabledLintingRules` | Comma-separated list of linting rule IDs to disable by default | `3,37` | No |
 | `Logging__LogLevel__Default` | Default logging level | `Information` | No |
 | `Logging__LogLevel__Microsoft.AspNetCore` | ASP.NET Core logging level | `Warning` | No |
 
@@ -85,7 +88,8 @@ The application is configured via `appsettings.json` or environment variables. B
   "ConnectionStrings": {
     "DefaultConnection": "DataSource=Data/app.db;Cache=Shared"
   },
-  "WACSUrl": "https://content.bibletranslationtools.org"
+  "WACSUrl": "https://content.bibletranslationtools.org",
+  "DefaultDisabledLintingRules": "3,37"
 }
 ```
 
@@ -94,7 +98,21 @@ The application is configured via `appsettings.json` or environment variables. B
 export ServiceBusConnectionString="Endpoint=sb://..."
 export ConnectionStrings__DefaultConnection="DataSource=Data/app.db;Cache=Shared"
 export WACSUrl="https://content.bibletranslationtools.org"
+export DefaultDisabledLintingRules="3,37"
 ```
+
+### DefaultDisabledLintingRules
+
+This optional configuration controls which linting rules are disabled by default when viewing linting results. 
+
+- **Format:** Comma-separated list of rule IDs (e.g., `"3,37"`)
+- **Default Behavior:** If not specified, all linting rules are enabled by default
+- **User Control:** Users can still manually enable or disable any rules through the UI regardless of this setting
+
+**Examples:**
+- Disable rules 3 and 37: `"DefaultDisabledLintingRules": "3,37"`
+- Disable rules 3, 37, and 5: `"DefaultDisabledLintingRules": "3,37,5"`
+- Enable all rules by default: Don't set this configuration or set it to an empty string `""`
 
 ## API Endpoints
 
