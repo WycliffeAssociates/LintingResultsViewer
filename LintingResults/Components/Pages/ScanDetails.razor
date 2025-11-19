@@ -19,9 +19,15 @@
         <FluentSwitch @bind-Value="ShowAll" Label="Show All"/>
         @if (baseUrlForWACS != null)
         {
-            <FluentAnchor slot="end" Href="@($"{baseUrlForWACS}{User}/{Repo}")" Appearance="Appearance.Accent" Target="_blank">View on WACS</FluentAnchor>
+            <FluentAnchor slot="end" Href="@($"{baseUrlForWACS}{User}/{Repo}")" Appearance="Appearance.Accent" Target="_blank">
+                <FluentIcon Value="@(new Icons.Regular.Size20.Globe())" slot="start"/>
+                View on WACS
+            </FluentAnchor>
         }
-        <FluentButton slot="end" Appearance="Appearance.Accent" OnClick="@DownloadCsv">Download CSV</FluentButton>
+        <FluentButton slot="end" Appearance="Appearance.Accent" OnClick="@DownloadCsv">
+            <FluentIcon Value="@(new Icons.Regular.Size20.ArrowDownload())" slot="start"/>
+            Download Results
+        </FluentButton>
     </FluentToolbar>
     <div class="details-container">
         <article class="details-main-content">
