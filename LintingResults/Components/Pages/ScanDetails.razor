@@ -1,25 +1,34 @@
 ﻿@page "/ScanDetails/{ScanId:int}"
 @inject IErrorDescriptionSource ErrorDescriptionSource
 @inject IConfiguration Configuration
+@inject NavigationManager NavigationManager
 @using LintingResults.Data
 @using LintingResults.Components.Controls
+@using LintingResults.Helpers
 @using Microsoft.EntityFrameworkCore
 @using LintingResults.Services
 @rendermode InteractiveServer
 @inject IDbContextFactory<LintingDbContext> ContextFactory
 <h1>Details for scan on @result.dateInserted</h1>
 
-    
+
 @if (result != null)
 {
     <FluentToolbar Style="width: 100%">
         <FluentSelect Disabled="ShowAll" Label="Select a book" TOption="KeyValuePair<string, Dictionary<string, List<LintingResultItem>>>" Items="result.LintingItems"
                       OptionValue="i => i.Key" OptionText="i => i.Key" @bind-SelectedOption="selectedItem"/>
         <FluentSwitch @bind-Value="ShowAll" Label="Show All"/>
-        @if (baseUrlForWACS != null)
-        {
-            <FluentAnchor slot="end" Href="@($"{baseUrlForWACS}{User}/{Repo}")" Appearance="Appearance.Accent" Target="_blank">View on WACS</FluentAnchor>
-        }
+            @if (baseUrlForWACS != null)
+            {
+                <FluentAnchor slot="end" Href="@($"{baseUrlForWACS}{User}/{Repo}")" Appearance="Appearance.Accent" Target="_blank">
+                    <FluentIcon Color="Color.Fill"  Value="@(new Icons.Regular.Size20.Globe())" slot="start"/>
+                    View on WACS
+                </FluentAnchor>
+            }
+            <FluentButton slot="end" Appearance="Appearance.Accent" OnClick="@DownloadCsv" Style="margin-left: .1em;">
+                <FluentIcon Color="Color.Fill" Value="@(new Icons.Regular.Size20.ArrowDownload())" slot="start"/>
+                Download Results
+            </FluentButton>
     </FluentToolbar>
     <div class="details-container">
         <article class="details-main-content">
@@ -74,7 +83,7 @@ else
         {
             return;
         }
-        result.LintingItems = result.LintingItems.OrderBy(i => bibleBookAbbreviations.IndexOf(i.Key)).ToDictionary(i => i.Key, i => i.Value);
+        result.LintingItems = result.LintingItems.OrderBy(i => BibleBookOrder.GetIndex(i.Key)).ToDictionary(i => i.Key, i => i.Value);
         var addedErrors = new HashSet<string>();
 
         var errorCodes = ErrorDescriptionSource.GetErrorDescriptions();
@@ -114,18 +123,10 @@ else
             
     }
 
-
-    List<string> bibleBookAbbreviations = new List<string>
+    private void DownloadCsv()
     {
-    // Old Testament
-    "GEN", "EXO", "LEV", "NUM", "DEU", "JOS", "JDG", "RUT", "1SA", "2SA",
-    "1KI", "2KI", "1CH", "2CH", "EZR", "NEH", "EST", "JOB", "PSA", "PRO",
-    "ECC", "SNG", "ISA", "JER", "LAM", "EZK", "DAN", "HOS", "JOL", "AMO",
-    "OBA", "JON", "MIC", "NAM", "HAB", "ZEP", "HAG", "ZEC", "MAL",
-
-    // New Testament
-    "MAT", "MRK", "LUK", "JHN", "ACT", "ROM", "1CO", "2CO", "GAL", "EPH",
-    "PHP", "COL", "1TH", "2TH", "1TI", "2TI", "TIT", "PHM", "HEB",
-    "JAS", "1PE", "2PE", "1JN", "2JN", "3JN", "JUD", "REV"
-    };
+        // Pass selected error codes as query parameter
+        var selectedCodesParam = string.Join(",", SelectedCodes);
+        NavigationManager.NavigateTo($"/api/linting/csv/{ScanId}?selectedCodes={Uri.EscapeDataString(selectedCodesParam)}", true);
+    }
 }

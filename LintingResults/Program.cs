@@ -6,6 +6,7 @@ using LintingResults.Components;
 using LintingResults.Components.Account;
 using LintingResults.Components.Pages;
 using LintingResults.Data;
+using LintingResults.Helpers;
 using LintingResults.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -88,6 +89,78 @@ app.MapGet("/api/linting/{username}/{reponame}", async (string username, string 
         .First();
     
     return Results.Ok(mostRecentResult);
+});
+
+// API endpoint to download linting results as CSV
+app.MapGet("/api/linting/csv/{scanId:int}", async (int scanId, string? selectedCodes, IDbContextFactory<LintingDbContext> contextFactory) =>
+{
+    using var context = contextFactory.CreateDbContext();
+    var result = await context.LintingResults.FirstOrDefaultAsync(lr => lr.LintingResultDBModelId == scanId);
+    
+    if (result == null)
+    {
+        return Results.NotFound(new { message = $"No linting result found for scan ID {scanId}" });
+    }
+    
+    var repo = await context.Repos.FirstOrDefaultAsync(r => r.RepoId == result.RepoId);
+    
+    // Parse selected error codes filter
+    HashSet<string>? selectedErrorCodes = null;
+    if (!string.IsNullOrWhiteSpace(selectedCodes))
+    {
+        selectedErrorCodes = selectedCodes.Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(c => c.Trim())
+            .ToHashSet();
+    }
+    
+    // Order books by biblical order using shared utility
+    var orderedLintingItems = result.LintingItems
+        .OrderBy(i => BibleBookOrder.GetIndex(i.Key))
+        .ToDictionary(i => i.Key, i => i.Value);
+    
+    using var memoryStream = new MemoryStream();
+    using var writer = new StreamWriter(memoryStream);
+    using var csv = new CsvHelper.CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture);
+    
+    // Write CSV header
+    csv.WriteField("Book");
+    csv.WriteField("Chapter");
+    csv.WriteField("Verse");
+    csv.WriteField("Error ID");
+    csv.WriteField("Message");
+    csv.NextRecord();
+    
+    // Write CSV data in biblical book order, filtered by selected error codes
+    foreach (var book in orderedLintingItems)
+    {
+        foreach (var chapter in book.Value)
+        {
+            foreach (var item in chapter.Value)
+            {
+                // Filter by selected error codes if specified
+                if (selectedErrorCodes != null && !selectedErrorCodes.Contains(item.errorId))
+                {
+                    continue;
+                }
+                
+                csv.WriteField(book.Key);
+                csv.WriteField(chapter.Key);
+                csv.WriteField(item.verse);
+                csv.WriteField(item.errorId);
+                csv.WriteField(item.message);
+                csv.NextRecord();
+            }
+        }
+    }
+    
+    await writer.FlushAsync();
+    memoryStream.Position = 0;
+    
+    var fileName = repo != null 
+        ? $"{repo.User}_{repo.RepoName}_{result.dateInserted:yyyy-MM-dd_HH-mm-ss}.csv"
+        : $"linting_results_{scanId}.csv";
+    
+    return Results.File(memoryStream.ToArray(), "text/csv", fileName);
 });
 
 // Apply any pending migrations on startup
