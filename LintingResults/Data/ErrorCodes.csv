@@ -114,3 +114,17 @@ Error,Description
 80,Incomplete file.
 80.1,Peripheral file not checked
 81,Missing \toc3 tag.
+0,Diagnostic message (preceding token or top of file)
+0.0,Unicode decode error details
+0.7,Sparse section headings detected
+2.5,Translation is long compared to source
+5.1,No book title found
+8.1,Chapter verse count differs from source text
+37.1,Too many missing paragraph markers; reporting canceled
+43.3,Bracket or parens where footnotes are common
+43.4,Optional text or untagged footnote
+73.6,One lone section marked in book
+74.1,USFM file does not start with book ID
+76.1,Possible section title at end of reference
+79.2,File appears to not be UTF-8
+999,Unresolved translation conflict
