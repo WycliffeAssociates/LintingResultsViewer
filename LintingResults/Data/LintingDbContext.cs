@@ -18,6 +18,12 @@ public class LintingDbContext: DbContext
             v => JsonSerializer.Serialize(v, JSONContext.Default.DictionaryStringDictionaryStringListLintingResultItem),
             v => JsonSerializer.Deserialize(v, JSONContext.Default.DictionaryStringDictionaryStringListLintingResultItem));
 
+        modelBuilder.Entity<Repo>()
+            .Property(e => e.RepoName)
+            .UseCollation("NOCASE");
+        modelBuilder.Entity<Repo>()
+            .Property(e => e.User)
+            .UseCollation("NOCASE");
         modelBuilder.Entity<LintingResultDBModel>()
             .Property(e => e.LintingItems)
             .HasConversion(converter);
