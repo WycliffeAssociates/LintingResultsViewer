@@ -45,7 +45,7 @@ public class LintingResultListener: IHostedService
             .FirstOrDefault(i => i.RepoId == lintingResult.RepoId);
         _logger.LogDebug($"Received linting result for {lintingResult.User}/{lintingResult.Repo}");
         var repoLintingItems = new Dictionary<string, Dictionary<string, List<LintingResultItem>>>();
-        var result = await _httpClient.GetAsync(lintingResult.ResultsFileUrl);
+        using var result = await _httpClient.GetAsync(lintingResult.ResultsFileUrl);
         if (!result.IsSuccessStatusCode)
         {
             _logger.LogError($"Failed to download results file from {lintingResult.ResultsFileUrl}");
