@@ -26,7 +26,7 @@ public class LintingResultListener: IHostedService
  public async Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Starting LintingResultListener");
-        _clientReceiver = _client.CreateProcessor(Topic, Subscription);
+        _clientReceiver = _client.CreateProcessor(Topic, Subscription, new ServiceBusProcessorOptions() {MaxConcurrentCalls = 1}); // We might want to scale this later but this eliminates race conditions
         _clientReceiver.ProcessMessageAsync += ProcessMessage;
         _clientReceiver.ProcessErrorAsync += args =>
         {
