@@ -20,7 +20,7 @@ public class LintingResultListener: IHostedService
         _logger = logger;
         _serviceScopeFactory = scopeFactory;
         var connectionString = config.Get<ConfigurationModel>()?.ServiceBusConnectionString;
-        ArgumentNullException.ThrowIfNull(connectionString, nameof(connectionString));
+        ArgumentNullException.ThrowIfNull(connectionString);
         _client = new ServiceBusClient(connectionString);
     }
  public async Task StartAsync(CancellationToken cancellationToken)
@@ -50,6 +50,11 @@ public class LintingResultListener: IHostedService
             return;
         }
         var repoLintingItems = await response.Content.ReadFromJsonAsync(JSONContext.Default.DictionaryStringDictionaryStringListLintingResultItem);
+        if (repoLintingItems == null)
+        {
+            _logger.LogError($"Failed to deserialize linting items from {lintingResult.ResultsFileUrl}");
+            return;
+        }
 
         if (lintingResult.CommitId != null)
         {
@@ -99,9 +104,16 @@ public class LintingResultListener: IHostedService
     /// <param name="incoming">The new one we have coming in</param>
     /// <remarks>This will merge things into a chapter -> verse hierarchy while not inserting duplicates</remarks>
     private static void MergeInto(
-        Dictionary<string, Dictionary<string, List<LintingResultItem>>> existing,
-        Dictionary<string, Dictionary<string, List<LintingResultItem>>> incoming)
+        Dictionary<string, Dictionary<string, List<LintingResultItem>>>? existing,
+        Dictionary<string, Dictionary<string, List<LintingResultItem>>>? incoming)
     {
+        if (incoming == null || incoming.Count == 0)
+        {
+            return;
+        }
+        
+        existing ??= new Dictionary<string, Dictionary<string, List<LintingResultItem>>>();
+        
         foreach (var (book, incomingChapters) in incoming)
         {
             if (!existing.TryGetValue(book, out var existingChapters))
