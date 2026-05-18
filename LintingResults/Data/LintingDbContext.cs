@@ -27,6 +27,9 @@ public class LintingDbContext: DbContext
         modelBuilder.Entity<LintingResultDBModel>()
             .Property(e => e.LintingItems)
             .HasConversion(converter);
+        modelBuilder.Entity<LintingResultDBModel>()
+            .HasIndex(e => new { e.RepoId, e.CommitId })
+            .IsUnique();
     }
 
 
