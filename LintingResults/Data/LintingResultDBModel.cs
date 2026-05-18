@@ -5,7 +5,8 @@ public class LintingResultDBModel
     public int RepoId { get; set; }
     public int LintingResultDBModelId { get; set; }
     public DateTime dateInserted { get; set; }
-    public Dictionary<string, Dictionary<string,List<LintingResultItem>>> LintingItems { get; set; }
+    public string? CommitId { get; set; }
+    public Dictionary<string, Dictionary<string, List<LintingResultItem>>> LintingItems { get; set; } = new();
 }
 
 public class LintingResultItem
